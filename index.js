@@ -35,6 +35,8 @@ const client = new MongoClient(uri, {
 
 const database = client.db("brandsDB");
 const brandProductsCollection = database.collection("products");
+const cartProductsCollection = database.collection("cart_products");
+
 // const ferrariCollection = database.collection("ferrari");
 // const lamborghiniCollection = database.collection("lamborghini");
 // const bugattiCollection = database.collection("bugatti");
@@ -53,6 +55,12 @@ async function run() {
         res.send(result);
       })
 
+      app.get('/cart_products', async (req, res) =>{
+        const cursor = cartProductsCollection.find();
+        const result = await cursor.toArray();
+        res.send(result);
+      })
+
     //create data or insert a data to database
     app.post("/products", async (req, res) => {
         console.log(req.body);
@@ -62,6 +70,12 @@ async function run() {
         console.log(result);
         
     });
+    app.post("/cart_products", async (req, res) => {
+        console.log(req.body);
+        const newCartProduct = req.body;
+        const result = await cartProductsCollection.insertOne(newCartProduct);
+        res.send(result);
+      });
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
