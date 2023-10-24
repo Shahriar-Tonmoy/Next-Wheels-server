@@ -1,6 +1,7 @@
 const express = require('express')
 require('dotenv').config()
 const { MongoClient, ServerApiVersion } = require('mongodb');
+const ObjectId = require('mongodb').ObjectId;
 const app = express();
 const cors = require('cors');
 const port = process.env.PORT || 4000;
@@ -60,6 +61,13 @@ async function run() {
         const result = await cursor.toArray();
         res.send(result);
       })
+    //api for getting one product
+    app.get('/products/:id', async (req, res) =>{
+        const id = req.params.id;
+        const query = {_id: new ObjectId(id)};
+        const product = await brandProductsCollection.findOne(query);
+        res.send(product);
+      })
 
     //create data or insert a data to database
     app.post("/products", async (req, res) => {
@@ -81,8 +89,31 @@ async function run() {
     app.delete('/cart_products/:cid', async(req, res) => {
         const id  = req.params.cid;
         console.log(`PLEASE DELETE ID FROM DATABASE: ${id}`);
-        const query = { _id: id};
+        const query = { _id: new ObjectId(id)};
+        console.log(query);
+        
         const result = await cartProductsCollection.deleteOne(query);
+        res.send(result);
+      })
+    //update data
+    app.put('/products/:id', async (req, res) => {
+        const id = req.params.id;
+        const toBeUpdatedProduct = req.body;
+        console.log(toBeUpdatedProduct);
+        const query = { _id: new ObjectId(id)};
+        const options = { upsert: true };
+        const updateProduct = {
+          $set: {
+            name:toBeUpdatedProduct.fName,
+            image:toBeUpdatedProduct.fImage,
+            brandName:toBeUpdatedProduct.fBrandName,
+            type:toBeUpdatedProduct.fType,
+            price:toBeUpdatedProduct.fPrice,
+            shortDescription:toBeUpdatedProduct.fShortDescription,
+            rating:toBeUpdatedProduct.fRating
+          }
+        }
+        const result = await brandProductsCollection.updateOne(query, updateProduct, options);
         res.send(result);
       })
 
